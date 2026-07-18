@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="th" class="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ROYAL AMBER - ระบบจองห้องประชุมองค์กร</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Prompt & Inter -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Prompt:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Prompt', 'Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        navy: {
+                            light: '#2E4C7E',
+                            DEFAULT: '#1E3A8A', /* Royal Navy Blue */
+                            dark: '#0F172A',
+                            soft: '#EEF2F6'     /* ครีมนมพาสเทล */
+                        },
+                        amber: {
+                            light: '#FDE68A',
+                            DEFAULT: '#F59E0B', /* Bright Amber */
+                            dark: '#B45309'
+                        },
+                        pastel: {
+                            cream: '#FFFBEB',
+                            pink: '#FCE7F3',
+                            blue: '#E0F2FE'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Prompt', sans-serif;
+            transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .soft-blur {
+            backdrop-filter: blur(12px);
+        }
+
+        .sweet-shadow {
+            box-shadow: 0 10px 25px -5px rgba(30, 58, 138, 0.08), 0 8px 10px -6px rgba(30, 58, 138, 0.05);
+        }
+
+        .dark .sweet-shadow {
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+    </style>
+</head>
+
+<body
+    class="bg-amber-[50]/40 text-slate-800 dark:bg-navy-dark dark:text-slate-100 min-h-screen relative overflow-x-hidden">
+
+    <!-- Ambient Pastel Backdrop Accents -->
+    <div
+        class="absolute top-0 right-0 w-[450px] h-[450px] bg-pastel-pink/40 dark:bg-navy-light/10 rounded-full blur-[100px] pointer-events-none z-0">
+    </div>
+    <div
+        class="absolute bottom-10 left-0 w-[450px] h-[450px] bg-pastel-blue/40 dark:bg-amber-dark/5 rounded-full blur-[100px] pointer-events-none z-0">
+    </div>
+
+    <!-- NAVBAR LAYER -->
+    <nav
+        class="border-b border-navy/10 bg-white/70 dark:bg-navy-dark/80 backdrop-blur-md sticky top-0 z-40 px-6 py-4 sweet-shadow">
+        <div class="max-w-7xl mx-auto flex justify-between items-center relative z-10">
+            <div class="flex items-center gap-3">
+                <div
+                    class="w-10 h-10 rounded-xl bg-gradient-to-tr from-navy via-navy-light to-amber flex items-center justify-center shadow-sm text-lg">
+                    👑</div>
+                <div>
+                    <h1 class="font-bold text-lg tracking-wide text-navy dark:text-amber-light">ROYAL AMBER</h1>
+                    <p class="text-[10px] tracking-widest text-slate-400 font-semibold uppercase">Smart Meeting Space
+                        Hub</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <!-- Session User Badge -->
+                <div id="user-badge"
+                    class="hidden md:flex items-center gap-2 bg-white dark:bg-slate-800 border border-navy/10 dark:border-slate-700 px-3 py-1.5 rounded-xl text-xs font-medium">
+                    <span class="w-2 h-2 rounded-full bg-amber animate-pulse"></span>
+                    <span id="user-badge-name" class="text-navy dark:text-slate-200">Guest</span>
+                    <button onclick="logoutSession()"
+                        class="text-rose-500 hover:underline ml-2 transition-all">ออกระบบ</button>
+                </div>
+
+                <!-- Theme Switcher Button -->
+                <button onclick="toggleTheme()"
+                    class="p-2.5 rounded-xl border border-navy/10 bg-white dark:bg-slate-800 dark:border-slate-700 transition-all duration-300 text-amber"
+                    aria-label="Toggle Theme">
+                    <svg id="theme-icon-sun" class="w-4 h-4 hidden" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 3v1m0 16v1m9-9h-1M4 9H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M16.243 17.657l.707.707M6.343 6.343l.707-.707m2.828 9.9a5 5 0 117.072 0l-.072.072z">
+                        </path>
+                    </svg>
+                    <svg id="theme-icon-moon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN AREA CONTENT CONTROLLER -->
+    <main class="max-w-7xl mx-auto px-4 md:px-8 py-8 relative z-10">
+
+        <!-- ==================== VIEW 1: AUTHENTICATION (LOGIN / REGISTER) ==================== -->
+        <section id="view-auth" class="max-w-md mx-auto my-12 transition-all duration-500">
+            <!-- Tabs Menu Header -->
+            <div
+                class="flex justify-center bg-white dark:bg-slate-800 p-1.5 rounded-2xl border border-navy/10 dark:border-slate-700 mb-8 max-w-xs mx-auto sweet-shadow">
+                <button onclick="switchAuthTab('login')" id="auth-tab-login"
+                    class="w-1/2 py-2 text-xs font-bold rounded-xl transition-all duration-300 bg-navy text-white shadow-sm">เข้าสู่ระบบ</button>
+                <button onclick="switchAuthTab('register')" id="auth-tab-register"
+                    class="w-1/2 py-2 text-xs font-bold rounded-xl transition-all duration-300 text-slate-400 dark:text-slate-400">ลงทะเบียน</button>
+            </div>
+
+            <!-- Card Outer Container -->
+            <div
+                class="bg-white/80 dark:bg-slate-800/90 border border-white dark:border-slate-700 rounded-3xl p-6 md:p-8 shadow-2xl backdrop-blur-md">
+
+                <!-- LOGIN FORM -->
+                <form id="form-login" onsubmit="handleLoginSubmit(event)" class="space-y-4">
+                    <div class="text-center mb-6">
+                        <h2 class="text-xl font-bold text-navy dark:text-amber-light">จองห้องประชุมออนไลน์</h2>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">ล็อกอินเพื่อจองห้อง
+                            หรือใช้รหัสแอนมินกลางจัดการระบบ</p>
+                    </div>
+                    <div>
+                        <label
+                            class="block text-xs font-bold text-navy dark:text-slate-300 mb-1.5 tracking-wide">Username
+                            / Admin Password</label>
+                        <input type="text" id="login-username" placeholder="ชื่อผู้ใช้ หรือ รหัสแอดมินกลาง..."
+                            class="w-full bg-pastel-cream/50 dark:bg-slate-900 border border-amber/30 dark:border-slate-600 focus:border-navy rounded-xl p-3 text-sm text-slate-800 dark:text-slate-200 outline-none transition-all"
+                            required>
+                    </div>
+                    <div>
+                        <label
+                            class="block text-xs font-bold text-navy dark:text-slate-300 mb-1.5 tracking-wide">Password
+                            (พนักงานทั่วไป)</label>
+                        <input type="password" id="login-password" placeholder="••••••••"
+                            class="w-full bg-pastel-cream/50 dark:bg-slate-900 border border-amber/30 dark:border-slate-600 focus:border-navy rounded-xl p-3 text-sm text-slate-800 dark:text-slate-200 outline-none transition-all">
+                        <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-1">* สิทธิ์แอดมินกลาง dtiadminsau
+                            ให้เว้นช่องรหัสผ่านนี้ไว้ได้เลย</p>
+                    </div>
+                    <button type="submit" id="btn-login-submit"
+                        class="w-full py-3.5 bg-navy hover:bg-navy-light text-white font-bold text-sm rounded-xl transition-all shadow-md transform hover:-translate-y-0.5 mt-4 flex justify-center items-center gap-2">
+                        <span>VERIFY IDENTITY</span>
+                    </button>
+                </form>
+
+                <!-- REGISTER FORM (UserRegistry Map) -->
+                <form id="form-register" onsubmit="handleRegisterSubmit(event)" class="space-y-4 hidden">
+                    <div class="text-center mb-6">
+                        <h2 class="text-xl font-bold text-navy dark:text-amber-light">สมัครบัญชีพนักงาน</h2>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                            กรอกข้อมูลให้ครบถ้วนเพื่อผูกสิทธิ์เข้ากับระบบใบจอง</p>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-navy dark:text-slate-300 mb-1.5 tracking-wide">ชื่อ -
+                            นามสกุล</label>
+                        <input type="text" id="reg-fullname" placeholder="นางสาว ร่ำรวย มั่นคง"
+                            class="w-full bg-pastel-cream/50 dark:bg-slate-900 border border-amber/30 dark:border-slate-600 focus:border-navy rounded-xl p-3 text-sm text-slate-800 dark:text-slate-200 outline-none transition-all"
+                            required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-navy dark:text-slate-300 mb-1.5 tracking-wide">แผนก /
+                            ฝ่ายงาน</label>
+                        <select id="reg-dept"
+                            class="w-full bg-pastel-cream/50 dark:bg-slate-900 border border-amber/30 dark:border-slate-600 focus:border-navy rounded-xl p-3 text-sm text-slate-800 dark:text-slate-200 outline-none transition-all">
+                            <option value="ฝ่ายทรัพยากรบุคคล (HR)">ฝ่ายทรัพยากรบุคคล (HR)</option>
+                            <option value="ฝ่ายบัญชีและการเงิน">ฝ่ายบัญชีและการเงิน</option>
+                            <option value="ฝ่ายขายและพัฒนาธุรกิจ">ฝ่ายขายและพัฒนาธุรกิจ</option>
+                            <option value="ฝ่ายสารสนเทศและไอที">ฝ่ายสารสนเทศและไอที</option>
+                            <option value="ฝ่ายประชาสัมพันธ์องค์กร">ฝ่ายประชาสัมพันธ์องค์กร</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label
+                            class="block text-xs font-bold text-navy dark:text-slate-300 mb-1.5 tracking-wide">Username</label>
+                        <input type="text" id="reg-username" placeholder="user.test"
+                            class="w-full bg-pastel-cream/50 dark:bg-slate-900 border border-amber/30 dark:border-slate-600 focus:border-navy rounded-xl p-3 text-sm text-slate-800 dark:text-slate-200 outline-none transition-all"
+                            required>
+                    </div>
+                    <div>
+                        <label
+                            class="block text-xs font-bold text-navy dark:text-slate-300 mb-1.5 tracking-wide">Password</label>
+                        <input type="password" id="reg-password" placeholder="ตั้งรหัสผ่าน..."
+                            class="w-full bg-pastel-cream/50 dark:bg-slate-900 border border-amber/30 dark:border-slate-600 focus:border-navy rounded-xl p-3 text-sm text-slate-800 dark:text-slate-200 outline-none transition-all"
+                            required>
+                    </div>
+                    <button type="submit" id="btn-reg-submit"
+                        class="w-full py-3.5 bg-amber hover:bg-amber-dark text-white font-bold text-sm rounded-xl transition-all shadow-md transform hover:-translate-y-0.5 mt-4 flex justify-center items-center gap-2">
+                        <span>CREATE ACCOUNT</span>
+                    </button>
+                </form>
+
+            </div>
+        </section>
+
+
+        <!-- ==================== VIEW 2: EMPLOYEE DASHBOARD (USER VIEW) ==================== -->
+        <section id="view-user-dashboard" class="space-y-8 hidden transition-all duration-500">
+            <!-- Header Welcome Card -->
+            <div
+                class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-slate-800 border border-navy/5 p-6 rounded-3xl sweet-shadow">
+                <div>
+                    <h2 class="text-2xl font-bold text-navy dark:text-amber-light">ระบบจองห้องประชุมภายในองค์กร</h2>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">ยินดีต้อนรับพนักงาน
+                        ตรวจสอบประวัติหรือเริ่มกดสร้างรายการยื่นจองห้องได้ทันที</p>
+                </div>
+                <button onclick="openModal('bookingModal')"
+                    class="px-5 py-3 text-xs font-bold uppercase tracking-wider rounded-xl bg-amber hover:bg-amber-dark text-white transition-all transform hover:-translate-y-0.5 shadow-sm flex items-center gap-2">
+                    <span>📅 เริ่มจองห้องประชุม</span>
+                </button>
+            </div>
+
+            <!-- Booking Cards Section (3-Column Grid Card Layout) -->
+            <div>
+                <h3 class="text-lg font-bold text-navy dark:text-slate-200 mb-4 flex items-center gap-2">📂
+                    ประวัติการจองห้องประชุมของฉัน</h3>
+                <div id="user-booking-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Injected via JS Render Engine -->
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ==================== VIEW 3: ADMIN CONTROL CENTER (ADMIN VIEW) ==================== -->
+        <section id="view-admin-dashboard" class="space-y-8 hidden transition-all duration-500">
+            <!-- Control Banner -->
+            <div
+                class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-navy text-white p-6 rounded-3xl sweet-shadow">
+                <div>
+                    <h2 class="text-2xl font-bold text-amber-light">ศูนย์อนุมัติคำขอจองห้องประชุม (Admin Platform)</h2>
+                    <p class="text-xs text-slate-300 mt-1">ตรวจสอบคิวทับซ้อน ตรวจสอบความถูกต้อง
+                        และกดพิจารณาคำขอจองห้องประชุมส่วนกลาง</p>
+                </div>
+
+                <!-- Filters tabs inside admin -->
+                <div class="flex bg-white/10 p-1 rounded-xl text-xs font-semibold border border-white/10">
+                    <button onclick="filterAdminGrid('ALL')" id="filter-admin-ALL"
+                        class="px-4 py-2 rounded-lg bg-amber text-white">ทั้งหมด</button>
+                    <button onclick="filterAdminGrid('Pending')" id="filter-admin-Pending"
+                        class="px-4 py-2 rounded-lg text-slate-300">รออนุมัติ</button>
+                    <button onclick="filterAdminGrid('Approved')" id="filter-admin-Approved"
+                        class="px-4 py-2 rounded-lg text-slate-300">อนุมัติแล้ว</button>
+                    <button onclick="filterAdminGrid('Rejected')" id="filter-admin-Rejected"
+                        class="px-4 py-2 rounded-lg text-slate-300">ปฏิเสธ</button>
+                </div>
+            </div>
+
+            <!-- Admin Display Grid (3-Column Grid Card Layout) -->
+            <div id="admin-booking-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Injected via JS Render Engine -->
+            </div>
+        </section>
+
+    </main>
+
+
+    <!-- ==================== MODALS & INPUT CONTROL LAYERS ==================== -->
+
+    <!-- Modal Form: Smart Booking Request Form -->
+    <div id="bookingModal"
+        class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-navy-dark/70 soft-blur transition-all duration-300 opacity-0">
+        <div
+            class="bg-white dark:bg-slate-800 border border-navy/10 dark:border-slate-700 w-full max-w-lg p-6 rounded-3xl shadow-2xl relative max-h-[92vh] overflow-y-auto">
+            <button onclick="closeModal('bookingModal')"
+                class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-lg p-2">✕</button>
+
+            <div class="mb-5">
+                <h3 class="font-bold text-lg text-navy dark:text-amber-light">สร้างใบยื่นคำขอจองห้องประชุม</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    ระบบจะตรวจสอบคิวซ้ำซ้อนอัตโนมัติเมื่อกดเลือกเวลา</p>
+            </div>
+
+            <form id="form-booking" onsubmit="handleBookingFormSubmit(event)" class="space-y-4">
+                <!-- Context Info Banner (Auto-fill) -->
+                <div
+                    class="grid grid-cols-2 gap-4 bg-pastel-cream dark:bg-slate-900 border border-amber/20 dark:border-slate-700 p-3 rounded-xl text-xs">
+                    <div>
+                        <span class="text-slate-400 block">ผู้ยื่นเรื่อง:</span>
+                        <strong id="auto-booker" class="text-navy dark:text-amber-light">--</strong>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block">สังกัดฝ่าย/แผนก:</span>
+                        <strong id="auto-dept" class="text-navy dark:text-amber-light">--</strong>
+                    </div>
+                </div>
+
+                <!-- Fields Grid -->
+                <div>
+                    <label
+                        class="block text-xs font-bold text-navy dark:text-slate-300 mb-1">เลือกห้องประชุมที่ต้องการ</label>
+                    <select id="bk-roomname"
+                        class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 focus:border-navy rounded-xl p-3 text-sm text-slate-800 dark:text-slate-200 outline-none transition-all">
+                        <option value="ห้องประชุม Emerald (10-15 ที่นั่ง)">🟢 ห้องประชุม Emerald (10-15 ที่นั่ง)
+                        </option>
+                        <option value="ห้องประชุม Sapphire (20-30 ที่นั่ง)">🔵 ห้องประชุม Sapphire (20-30 ที่นั่ง)
+                        </option>
+                        <option value="ห้องประชุม Diamond Hall (50 ที่นั่งขึ้นไป)">💎 ห้องประชุม Diamond Hall (50
+                            ที่นั่งขึ้นไป)</option>
+                        <option value="ห้องบอร์ดบริหาร Creative Room (8 ที่นั่ง)">🎨 ห้องบอร์ดบริหาร Creative Room (8
+                            ที่นั่ง)</option>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div>
+                        <label
+                            class="block text-xs font-bold text-navy dark:text-slate-300 mb-1">วันที่ต้องการจอง</label>
+                        <input type="date" id="bk-date"
+                            class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl p-2.5 text-xs text-slate-800 dark:text-slate-200 outline-none"
+                            required>
+                    </div>
+                    <div>
+                        <label
+                            class="block text-xs font-bold text-navy dark:text-slate-300 mb-1">เวลาเริ่มใช้งาน</label>
+                        <input type="time" id="bk-start"
+                            class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl p-2.5 text-xs text-slate-800 dark:text-slate-200 outline-none"
+                            required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-navy dark:text-slate-300 mb-1">เวลาสิ้นสุด</label>
+                        <input type="time" id="bk-end"
+                            class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl p-2.5 text-xs text-slate-800 dark:text-slate-200 outline-none"
+                            required>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-4 gap-3">
+                    <div class="col-span-3">
+                        <label class="block text-xs font-bold text-navy dark:text-slate-300 mb-1">หัวข้อการประชุม /
+                            วัตถุประสงค์</label>
+                        <input type="text" id="bk-title" placeholder="เช่น ประชมสรุปแผนงานประจำเดือน..."
+                            class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl p-3 text-sm text-slate-800 dark:text-slate-200 outline-none"
+                            required>
+                    </div>
+                    <div class="col-span-1">
+                        <label class="block text-xs font-bold text-navy dark:text-slate-300 mb-1">ผู้ร่วมประชุม</label>
+                        <input type="number" id="bk-attendees" min="1" value="5"
+                            class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl p-3 text-sm text-slate-800 dark:text-slate-200 text-center outline-none"
+                            required>
+                    </div>
+                </div>
+
+                <button type="submit" id="btn-booking-submit"
+                    class="w-full bg-navy hover:bg-navy-light text-white font-bold py-3.5 rounded-xl transition-all shadow-md mt-2 flex justify-center items-center gap-2">
+                    <span>ยื่นข้อมูลและตรวจสอบห้องว่าง</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- Modal Form: Admin Note & Action Decision PopUp -->
+    <div id="adminRejectModal"
+        class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-navy-dark/70 soft-blur transition-all duration-300 opacity-0">
+        <div
+            class="bg-white dark:bg-slate-800 border border-navy/10 dark:border-slate-700 w-full max-w-md p-6 rounded-3xl shadow-2xl relative">
+            <button onclick="closeModal('adminRejectModal')"
+                class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-lg p-2">✕</button>
+
+            <div class="mb-4">
+                <h3 class="font-bold text-lg text-rose-600">ปฏิเสธคำขอการจองห้อง</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5" id="admin-target-booking-label">ใบจองรหัส:
+                    BK-XXXX</p>
+            </div>
+
+            <form id="form-admin-reject" onsubmit="handleAdminRejectSubmit(event)" class="space-y-4">
+                <input type="hidden" id="admin-target-booking-id">
+
+                <div>
+                    <label
+                        class="block text-xs font-bold text-slate-500 dark:text-slate-300 mb-1.5">ระบุเหตุผลย่อความขัดข้อง
+                        (AdminNote)</label>
+                    <textarea id="admin-note" rows="3" placeholder="เช่น เวลาชนกับห้องประชุมผู้บริหารท่านอื่น..."
+                        class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 focus:border-rose-500 rounded-xl p-3 text-sm text-slate-800 dark:text-slate-200 outline-none transition-all"
+                        required></textarea>
+                </div>
+
+                <button type="submit" id="btn-reject-submit"
+                    class="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-3 rounded-xl transition-all shadow-md flex justify-center items-center gap-2">
+                    <span>ยืนยันการปฏิเสธคำจอง (Rejected)</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- ==================== JAVASCRIPT MASTER IMPLEMENTATION ==================== -->
+    <script>
+        // --- 1. SETTING CLOUD API CONNECTORS (Apps Script Web App Link) ---
+        const API_URL = "https://script.google.com/macros/s/AKfycbzd8BrPTryHoqLaqkLQ3qRyqe8oSsyaF7Gf_0dx19Me6SRp3fusFknPyjtXlceMey0v/exec";
+
+        // Global Dynamic Session Variables
+        let currentUserSession = null;
+        let currentAdminFilter = 'ALL';
+        let allBookingsCache = []; // เก็บสำเนาข้อมูลการจองไว้คัดกรองฝั่ง Admin
+
+        // --- 2. LIFECYCLE CONTROLLERS ---
+        window.addEventListener('DOMContentLoaded', () => {
+            initAppTheme();
+            renderMainFlow();
+        });
+
+        // --- 3. DYNAMIC THEME ENGINE ---
+        function initAppTheme() {
+            const html = document.documentElement;
+            const sunIcon = document.getElementById('theme-icon-sun');
+            const moonIcon = document.getElementById('theme-icon-moon');
+
+            if (localStorage.getItem('nordic-theme') === 'dark') {
+                html.classList.remove('light');
+                html.classList.add('dark');
+                sunIcon.classList.add('hidden');
+                moonIcon.classList.remove('hidden');
+            } else {
+                html.classList.remove('dark');
+                html.classList.add('light');
+                sunIcon.classList.remove('hidden');
+                moonIcon.classList.add('hidden');
+            }
+        }
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            const sunIcon = document.getElementById('theme-icon-sun');
+            const moonIcon = document.getElementById('theme-icon-moon');
+
+            if (html.classList.contains('light')) {
+                html.classList.remove('light');
+                html.classList.add('dark');
+                sunIcon.classList.remove('hidden');
+                moonIcon.classList.add('hidden');
+                localStorage.setItem('nordic-theme', 'dark');
+            } else {
+                html.classList.remove('dark');
+                html.classList.add('light');
+                sunIcon.classList.add('hidden');
+                moonIcon.classList.remove('hidden');
+                localStorage.setItem('nordic-theme', 'light');
+            }
+        }
+
+        // --- 4. SKELETON LOADER GRAPHICS ENGINE (UX Enhancements) ---
+        function renderSkeletonLoader(containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+
+            // สร้างการ์ดจำลองความเงียบ 3 ใบขยับวูบวาบระหว่างประมวลผลเครือข่าย
+            for (let i = 0; i < 3; i++) {
+                container.innerHTML += `
+                    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 p-5 rounded-2xl sweet-shadow animate-pulse space-y-4">
+                        <div class="flex justify-between items-center">
+                            <div class="h-5 w-20 bg-slate-200 dark:bg-slate-700 rounded"></div>
+                            <div class="h-5 w-16 bg-slate-200 dark:bg-slate-700 rounded-full"></div>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="h-4 w-3/4 bg-slate-200 dark:bg-slate-700 rounded"></div>
+                            <div class="h-4 w-1/2 bg-slate-200 dark:bg-slate-700 rounded"></div>
+                        </div>
+                        <div class="h-16 bg-slate-100 dark:bg-slate-900 rounded-xl"></div>
+                        <div class="h-3 w-1/3 bg-slate-200 dark:bg-slate-700 ml-auto"></div>
+                    </div>`;
+            }
+        }
+
+        // --- 5. VIEW RENDERING HUB (SPA CONTROL) ---
+        function renderMainFlow() {
+            const viewAuth = document.getElementById('view-auth');
+            const viewUser = document.getElementById('view-user-dashboard');
+            const viewAdmin = document.getElementById('view-admin-dashboard');
+            const userBadge = document.getElementById('user-badge');
+
+            viewAuth.classList.add('hidden');
+            viewUser.classList.add('hidden');
+            viewAdmin.classList.add('hidden');
+            userBadge.classList.add('hidden');
+
+            if (!currentUserSession) {
+                viewAuth.classList.remove('hidden');
+            } else if (currentUserSession.role === 'admin') {
+                viewAdmin.classList.remove('hidden');
+                userBadge.classList.remove('hidden');
+                document.getElementById('user-badge-name').innerText = "ผู้ดูแลระบบกลาง (Admin)";
+                fetchAdminData();
+            } else if (currentUserSession.role === 'user') {
+                viewUser.classList.remove('hidden');
+                userBadge.classList.remove('hidden');
+                document.getElementById('user-badge-name').innerText = currentUserSession.fullName;
+                fetchUserData();
+            }
+        }
+
+        function switchAuthTab(target) {
+            const btnLogin = document.getElementById('auth-tab-login');
+            const btnRegister = document.getElementById('auth-tab-register');
+            const formLogin = document.getElementById('form-login');
+            const formRegister = document.getElementById('form-register');
+
+            if (target === 'login') {
+                btnLogin.className = "w-1/2 py-2 text-xs font-bold rounded-xl transition-all bg-navy text-white shadow-sm";
+                btnRegister.className = "w-1/2 py-2 text-xs font-bold rounded-xl transition-all text-slate-400";
+                formLogin.classList.remove('hidden');
+                formRegister.classList.add('hidden');
+            } else {
+                btnRegister.className = "w-1/2 py-2 text-xs font-bold rounded-xl transition-all bg-navy text-white shadow-sm";
+                btnLogin.className = "w-1/2 py-2 text-xs font-bold rounded-xl transition-all text-slate-400";
+                formRegister.classList.remove('hidden');
+                formLogin.classList.add('hidden');
+            }
+        }
+
+        // --- 6. LIVE FETCH LAYER: CLOUD AUTHENTICATION ---
+        async function handleLoginSubmit(e) {
+            e.preventDefault();
+            const usernameInput = document.getElementById('login-username').value.trim();
+            const passwordInput = document.getElementById('login-password').value;
+            const btn = document.getElementById('btn-login-submit');
+
+            if (usernameInput === "dtiadminsau") {
+                currentUserSession = { role: 'admin', fullName: 'Central Admin' };
+                alert("สิทธิ์แอดมินกลางได้รับการยืนยัน! กำลังพาเข้าสู่หน้าควบคุมหลัก");
+                document.getElementById('form-login').reset();
+                renderMainFlow();
+                return;
+            }
+
+            // แสดงสถานะ Loading บนปุ่ม
+            btn.disabled = true;
+            btn.innerHTML = `<span class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span> <span>กำลังตรวจสอบ...</span>`;
+
+            try {
+                const response = await fetch(`${API_URL}?action=getUserRegistry`);
+                const result = await response.json();
+
+                if (result.status === "success") {
+                    const matchedUser = result.data.find(u => u.Username === usernameInput && String(u.Password) === String(passwordInput));
+                    if (matchedUser) {
+                        currentUserSession = {
+                            role: 'user',
+                            username: matchedUser.Username,
+                            fullName: matchedUser.FullName,
+                            department: matchedUser.Department
+                        };
+                        alert(`ยินดีต้อนรับพนักงาน คุณ ${matchedUser.FullName} เข้าสู่ระบบ`);
+                        document.getElementById('form-login').reset();
+                        renderMainFlow();
+                    } else {
+                        alert("ข้อมูลล็อกอินไม่ถูกต้อง! โปรดตรวจสอบชื่อผู้ใช้และรหัสผ่าน");
+                    }
+                } else {
+                    alert("เกิดข้อผิดพลาดจากเซิร์ฟเวอร์คลาวด์: " + result.message);
+                }
+            } catch (error) {
+                console.error(error);
+                alert("ไม่สามารถติดต่อ API Server ได้ โปรดลองใหม่อีกครั้ง");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<span>VERIFY IDENTITY</span>`;
+            }
+        }
+
+        async function handleRegisterSubmit(e) {
+            e.preventDefault();
+            const fullName = document.getElementById('reg-fullname').value.trim();
+            const department = document.getElementById('reg-dept').value;
+            const username = document.getElementById('reg-username').value.trim();
+            const password = document.getElementById('reg-password').value;
+            const btn = document.getElementById('btn-reg-submit');
+
+            if (username === "dtiadminsau") {
+                alert("ไม่สามารถใช้ Username ตัวกลางนี้สมัครได้");
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = `<span class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span> <span>กำลังบันทึกลงชีต...</span>`;
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: "POST",
+                    mode: "no-cors", // ใช้ no-cors สำหรับ Apps Script การตอบกลับในโหมดนี้จะเป็นสัญลักษณ์ทึบแสง
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        action: "registerUser",
+                        fullName: fullName,
+                        department: department,
+                        username: username,
+                        password: password
+                    })
+                });
+
+                // สำหรับ Google Apps Script POST มักจะเกิด Redirect ส่งข้อความสำเร็จทันทีเนื่องจากตรวจสอบเงื่อนไขที่ฝั่งส่ง
+                alert("ส่งข้อมูลลงทะเบียนพนักงานเข้าคลาวด์เรียบร้อยแล้ว! โปรดเข้าสู่ระบบ");
+                document.getElementById('form-register').reset();
+                switchAuthTab('login');
+            } catch (error) {
+                console.error(error);
+                alert("การส่งข้อมูลล้มเหลว ตรวจสอบระบบเครือข่ายของคุณ");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<span>CREATE ACCOUNT</span>`;
+            }
+        }
+
+        function logoutSession() {
+            currentUserSession = null;
+            allBookingsCache = [];
+            renderMainFlow();
+        }
+
+        // --- 7. LIVE FETCH LAYER: USER DASHBOARD DATASTREAM ---
+        async function fetchUserData() {
+            renderSkeletonLoader('user-booking-grid');
+            try {
+                const response = await fetch(`${API_URL}?action=getBookingRequests&username=${currentUserSession.username}`);
+                const result = await response.json();
+
+                if (result.status === "success") {
+                    renderUserBookingGrid(result.data);
+                } else {
+                    document.getElementById('user-booking-grid').innerHTML = `<p class="text-rose-500 text-center col-span-full">ดึงข้อมูลไม่สำเร็จ: ${result.message}</p>`;
+                }
+            } catch (error) {
+                document.getElementById('user-booking-grid').innerHTML = `<p class="text-rose-500 text-center col-span-full">เกิดข้อผิดพลาดในการโหลดข้อมูล</p>`;
+            }
+        }
+
+        function renderUserBookingGrid(records) {
+            const container = document.getElementById('user-booking-grid');
+            container.innerHTML = '';
+
+            if (!records || records.length === 0) {
+                container.innerHTML = `<div class="col-span-full bg-white dark:bg-slate-800 p-12 text-center rounded-2xl border border-dashed text-slate-400">ยังไม่มีประวัติการยื่นคำขอจองห้องประชุมของคุณในคลาวด์</div>`;
+                return;
+            }
+
+            // แสดงผลการจองแบบเรียงลำดับแถวล่าสุดขึ้นก่อน
+            [...records].reverse().forEach(item => {
+                let badgeStyle = '';
+                if (item.Status === 'Pending') badgeStyle = 'bg-amber/10 border-amber/30 text-amber';
+                else if (item.Status === 'Approved') badgeStyle = 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400';
+                else badgeStyle = 'bg-rose-500/10 border-rose-500/30 text-rose-500';
+
+                // จัดฟอร์แมตวันที่แสดงผลให้อ่านง่าย
+                let formattedDate = item.BookingDate;
+                if (item.BookingDate.includes('T')) formattedDate = item.BookingDate.split('T')[0];
+
+                container.innerHTML += `
+                    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 p-5 rounded-2xl sweet-shadow flex flex-col justify-between hover:scale-[1.01] transition-all">
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-900 text-navy dark:text-amber-light">${item.BookingID}</span>
+                                <span class="text-xs font-bold border px-2 py-0.5 rounded-full ${badgeStyle}">${item.Status}</span>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-sm text-slate-400 uppercase tracking-wide">${item.RoomName}</h4>
+                                <h5 class="font-bold text-base text-navy dark:text-slate-100 mt-0.5">${item.MeetingTitle}</h5>
+                            </div>
+                            <div class="text-xs bg-slate-50 dark:bg-slate-900 p-3 rounded-xl space-y-1 text-slate-600 dark:text-slate-300">
+                                <p>📅 วันที่จอง: <strong>${formattedDate}</strong></p>
+                                <p>⏰ เวลาใช้งาน: <strong>${item.StartTime} - ${item.EndTime} น.</strong></p>
+                                <p>👥 ผู้ร่วมประชุม: <strong>${item.AttendeesCount} ท่าน</strong></p>
+                            </div>
+                            ${item.AdminNote ? `<div class="p-2.5 bg-rose-50 dark:bg-slate-900 border-l-4 border-amber rounded text-xs italic text-slate-500 dark:text-slate-400">หมายเหตุผู้ดูแล: ${item.AdminNote}</div>` : ''}
+                        </div>
+                        <div class="text-[10px] text-slate-400 mt-4 text-right">บันทึกระบบคลาวด์</div>
+                    </div>`;
+            });
+        }
+
+        // --- 8. LIVE POST LAYER: SMART BOOKING ENGINE ---
+        async function handleBookingFormSubmit(e) {
+            e.preventDefault();
+            const roomName = document.getElementById('bk-roomname').value;
+            const bookingDate = document.getElementById('bk-date').value;
+            const startTime = document.getElementById('bk-start').value;
+            const endTime = document.getElementById('bk-end').value;
+            const meetingTitle = document.getElementById('bk-title').value.trim();
+            const attendeesCount = parseInt(document.getElementById('bk-attendees').value);
+            const btn = document.getElementById('btn-booking-submit');
+
+            if (startTime >= endTime) {
+                alert("ข้อผิดพลาด: เวลาเริ่มใช้งาน ต้องเกิดขึ้นก่อนเวลาสิ้นสุดเสมอ!");
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = `<span class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span> <span>กำลังตรวจคิวทับซ้อนและบันทึก...</span>`;
+
+            try {
+                // ส่งตรงไปยังปลายทาง หลังบ้าน Apps Script จะช่วยประมวลผล Collision Detection ให้อีกชั้นอย่างแม่นยำ
+                await fetch(API_URL, {
+                    method: "POST",
+                    mode: "no-cors",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        action: "createBookingRequest",
+                        reporterUsername: currentUserSession.username,
+                        reporterName: currentUserSession.fullName,
+                        department: currentUserSession.department,
+                        roomName: roomName,
+                        bookingDate: bookingDate,
+                        startTime: startTime,
+                        endTime: endTime,
+                        meetingTitle: meetingTitle,
+                        attendeesCount: attendeesCount
+                    })
+                });
+
+                alert(`🎉 ส่งคำขอสำเร็จ! ระบบกำลังนำส่งข้อมูลเข้าคลาวด์ในสถานะ "รออนุมัติ"`);
+                document.getElementById('form-booking').reset();
+                closeModal('bookingModal');
+                // โหลดซ้ำเพื่ออัปเดตหน้าจอหลักจากฐานข้อมูลกลาง
+                setTimeout(() => { fetchUserData(); }, 1500);
+            } catch (error) {
+                console.error(error);
+                alert("เกิดปัญหาในการส่งเอกสารใบจอง");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<span>ยื่นข้อมูลและตรวจสอบห้องว่าง</span>`;
+            }
+        }
+
+        // --- 9. LIVE FETCH LAYER: ADMIN PIPELINE CONTROL ---
+        async function fetchAdminData() {
+            renderSkeletonLoader('admin-booking-grid');
+            try {
+                const response = await fetch(`${API_URL}?action=getBookingRequests`);
+                const result = await response.json();
+
+                if (result.status === "success") {
+                    allBookingsCache = result.data;
+                    renderAdminBookingGrid();
+                } else {
+                    document.getElementById('admin-booking-grid').innerHTML = `<p class="text-rose-500 text-center col-span-full">ดึงข้อมูลล้มเหลว</p>`;
+                }
+            } catch (error) {
+                document.getElementById('admin-booking-grid').innerHTML = `<p class="text-rose-500 text-center col-span-full">เครือข่ายขัดข้อง</p>`;
+            }
+        }
+
+        function filterAdminGrid(status) {
+            currentAdminFilter = status;
+            ['ALL', 'Pending', 'Approved', 'Rejected'].forEach(s => {
+                const btn = document.getElementById(`filter-admin-${s}`);
+                if (s === status) btn.className = "px-4 py-2 rounded-lg bg-amber text-white";
+                else btn.className = "px-4 py-2 rounded-lg text-slate-300 hover:text-white transition-colors";
+            });
+            renderAdminBookingGrid();
+        }
+
+        function renderAdminBookingGrid() {
+            const container = document.getElementById('admin-booking-grid');
+            container.innerHTML = '';
+
+            let filtered = allBookingsCache;
+            if (currentAdminFilter !== 'ALL') {
+                filtered = allBookingsCache.filter(b => b.Status === currentAdminFilter);
+            }
+
+            if (!filtered || filtered.length === 0) {
+                container.innerHTML = `<div class="col-span-full bg-white dark:bg-slate-800 p-12 text-center rounded-2xl text-slate-400">ไม่มีรายการคำขอห้องประชุมในกล่องตัวกรองนี้</div>`;
+                return;
+            }
+
+            [...filtered].reverse().forEach(item => {
+                let badgeStyle = '';
+                let actionHTML = '';
+
+                let formattedDate = item.BookingDate;
+                if (item.BookingDate.includes('T')) formattedDate = item.BookingDate.split('T')[0];
+
+                if (item.Status === 'Pending') {
+                    badgeStyle = 'bg-amber/10 border-amber/30 text-amber';
+                    actionHTML = `
+                        <div class="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-slate-100 dark:border-slate-700">
+                            <button onclick="approveBooking('${item.BookingID}')" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2 rounded-lg transition-all">✓ อนุมัติ</button>
+                            <button onclick="openRejectModal('${item.BookingID}')" class="bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold py-2 rounded-lg transition-all">✕ ปฏิเสธ</button>
+                        </div>`;
+                } else {
+                    badgeStyle = item.Status === 'Approved' ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400' : 'bg-rose-500/10 border-rose-500/30 text-rose-500';
+                    actionHTML = `<div class="text-center text-[11px] text-slate-400 dark:text-slate-500 font-medium pt-3 mt-3 border-t border-slate-100 dark:border-slate-700">🔒 พิจารณาเสร็จสิ้นแล้ว</div>`;
+                }
+
+                container.innerHTML += `
+                    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 p-5 rounded-2xl sweet-shadow flex flex-col justify-between">
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-900 text-navy dark:text-amber-light">${item.BookingID}</span>
+                                <span class="text-xs font-bold border px-2 py-0.5 rounded-full ${badgeStyle}">${item.Status}</span>
+                            </div>
+                            <div class="text-xs space-y-1 p-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl">
+                                <p class="text-slate-500">ผู้ยื่นเรื่อง: <strong class="text-navy dark:text-slate-200">${item.ReporterName} (${item.Department})</strong></p>
+                                <p class="text-slate-500">ห้อง: <strong class="text-amber-dark dark:text-amber-light">${item.RoomName}</strong></p>
+                                <p class="text-slate-500">วาระ: <strong class="text-slate-800 dark:text-slate-100">"${item.MeetingTitle}"</strong></p>
+                            </div>
+                            <div class="text-xs font-semibold px-2 text-navy dark:text-amber-light flex justify-between">
+                                <span>📅 ${formattedDate}</span>
+                                <span>⏰ ${item.StartTime} - ${item.EndTime} น.</span>
+                            </div>
+                            ${item.AdminNote ? `<p class="text-xs text-rose-500 dark:text-rose-400 bg-rose-50/50 dark:bg-slate-900 p-2 rounded-lg">เหตุผล: ${item.AdminNote}</p>` : ''}
+                        </div>
+                        ${actionHTML}
+                    </div>`;
+            });
+        }
+
+        async function approveBooking(bookingID) {
+            if (!confirm(`คุณแน่ใจที่จะอนุมัติสิทธิ์ใบจอง ${bookingID} หรือไม่?`)) return;
+            try {
+                await fetch(API_URL, {
+                    method: "POST",
+                    mode: "no-cors",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        action: "updateBookingStatus",
+                        bookingId: bookingID,
+                        status: "Approved",
+                        adminNote: "ยืนยันสิทธิ์จองสำเร็จเปิดระบบไฟห้องประชุมให้เรียบร้อย"
+                    })
+                });
+                alert(`อนุมัติใบจอง ${bookingID} สำเร็จครับ`);
+                setTimeout(() => { fetchAdminData(); }, 1200);
+            } catch (error) {
+                alert("มีข้อผิดพลาดเกิดขึ้นในการส่งคำสั่ง");
+            }
+        }
+
+        function openRejectModal(bookingID) {
+            document.getElementById('admin-target-booking-id').value = bookingID;
+            document.getElementById('admin-target-booking-label').innerText = `ใบจองรหัส: ${bookingID}`;
+            openModal('adminRejectModal');
+        }
+
+        async function handleAdminRejectSubmit(e) {
+            e.preventDefault();
+            const bookingID = document.getElementById('admin-target-booking-id').value;
+            const noteText = document.getElementById('admin-note').value.trim();
+            const btn = document.getElementById('btn-reject-submit');
+
+            btn.disabled = true;
+            btn.innerHTML = `<span class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span> <span>กำลังบันทึก...</span>`;
+
+            try {
+                await fetch(API_URL, {
+                    method: "POST",
+                    mode: "no-cors",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        action: "updateBookingStatus",
+                        bookingId: bookingID,
+                        status: "Rejected",
+                        adminNote: noteText
+                    })
+                });
+
+                alert(`ปฏิเสธคำขอใบจอง ${bookingID} เรียบร้อยแล้ว`);
+                document.getElementById('form-admin-reject').reset();
+                closeModal('adminRejectModal');
+                setTimeout(() => { fetchAdminData(); }, 1200);
+            } catch (error) {
+                alert("เกิดความผิดพลาดระหว่างปรับสถานะบนฐานข้อมูล");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<span>ยืนยันการปฏิเสธคำจอง (Rejected)</span>`;
+            }
+        }
+
+        // --- 10. MODAL INTERACTORS ENGINE ---
+        function openModal(id) {
+            const m = document.getElementById(id);
+            if (m) {
+                if (id === 'bookingModal' && currentUserSession) {
+                    document.getElementById('auto-booker').innerText = currentUserSession.fullName;
+                    document.getElementById('auto-dept').innerText = currentUserSession.department;
+                }
+                m.classList.remove('hidden');
+                setTimeout(() => m.classList.add('opacity-100'), 10);
+            }
+        }
+
+        function closeModal(id) {
+            const m = document.getElementById(id);
+            if (m) {
+                m.classList.remove('opacity-100');
+                setTimeout(() => m.classList.add('hidden'), 300);
+            }
+        }
+    </script>
+</body>
+
+</html>
